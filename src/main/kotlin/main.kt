@@ -13,7 +13,7 @@ fun main() {
 }
 
 // returning numbers for maximum sum
-fun calculateResults(array: Array<Int>): MutableList<Result> {
+private fun calculateResults(array: Array<Int>): MutableList<Result> {
     if (array.size != 3) {
         println("Wrong array size")
         return mutableListOf<Result>()
@@ -52,7 +52,7 @@ private fun getNumbersFromUser(): Array<Int> {
 }
 
 // gets all possible incrementation options and calculates maximum possible value for each of these changes
-private fun calculateValues(number: Int): Array<Int> {
+fun calculateValues(number: Int): Array<Int> {
     val maxAmountOfChanges = countChangesBetweenNumbers(number, changeDigitsToNines(number)) // e.g. changes from 123 to 999
 
     val listOptions: MutableList<Int> = getPossibleIncrementationOptions(number, maxAmountOfChanges) // how many times we can increment digits
@@ -100,7 +100,7 @@ private fun getSingleNumberFromUser(): Int {
 }
 
 // creating number from digits 9
-private fun changeDigitsToNines(number: Int): Int {
+fun changeDigitsToNines(number: Int): Int {
     val numberString = number.toString()
     val maxNumber: Array<Int> = Array(numberString.length, { 9 })
 
@@ -108,7 +108,7 @@ private fun changeDigitsToNines(number: Int): Int {
 }
 
 // adding MAX_OPERATIONS to every digit of user's number (or less if it would be greater than 9) and make sure new number is dividable by 3
-private fun incrementDigitsByMax(number: Int): Int {
+fun incrementDigitsByMax(number: Int): Int {
     val numberString = number.toString()
     val maxNumber: Array<Int> = Array(numberString.length, { 0 })
 
@@ -124,7 +124,7 @@ private fun incrementDigitsByMax(number: Int): Int {
 }
 
 // counting amount of changes between two numbers: userNumber and currentNumber
-private fun countChangesBetweenNumbers(userNumber: Int, currentNumber: Int): Int {
+fun countChangesBetweenNumbers(userNumber: Int, currentNumber: Int): Int {
     val userNumberString = userNumber.toString()
     val userArray: Array<String> = userNumberString.toCharArray().map { it.toString() }.toTypedArray()
     val userArrayInts: Array<Int> = userArray.map { it.toInt() }.toTypedArray()
@@ -150,7 +150,7 @@ private fun changeArrayOfIntsToInt(arrayToConvert: Array<Int>): Int {
 }
 
 // converting input to next possible number dividable by 3 (or returning original if it's already dividable)
-private fun makeDividableByThree(number: Int): Int {
+fun makeDividableByThree(number: Int): Int {
     var result = number
     if (number % 3 == 1) {
         result = number + 2
@@ -161,7 +161,7 @@ private fun makeDividableByThree(number: Int): Int {
 }
 
 // checking modulo of user's number and how many changes you can make thereupon
-private fun getPossibleIncrementationOptions(number: Int, maxNumberOfChanges: Int): MutableList<Int> {
+fun getPossibleIncrementationOptions(number: Int, maxNumberOfChanges: Int): MutableList<Int> {
     val numberOfOptions = number % 3
     val optionsList = mutableListOf<Int>()
     if (numberOfOptions == 0) {
