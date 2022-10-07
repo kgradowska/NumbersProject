@@ -3,22 +3,38 @@ import kotlin.math.min
 private const val MAX_OPERATIONS = 6
 
 fun main() {
-    val userNumbers: UserNumbers = getNumbersFromUser()
+    val userNumbers: Array<Int> = getNumbersFromUser()
+    val results = calculateResults(userNumbers)
 
-    val values1 = countValues(userNumbers.first)
-    val values2 = countValues(userNumbers.second)
-    val values3 = countValues(userNumbers.third)
-
-    val listOfPossibleResults = findBestResult(values1, values2, values3)
-    println(listOfPossibleResults[0].sum)
-    for (i in 0 until   listOfPossibleResults.size) {
-        if(listOfPossibleResults[i].sum == listOfPossibleResults[0].sum) {
-            println("[ ${listOfPossibleResults[i].num1}, ${listOfPossibleResults[i].num2}, ${listOfPossibleResults[i].num3} ]")
-        }
+    println("Best result(s):")
+    for (item in results) {
+        println("[ ${item.num1}, ${item.num2}, ${item.num3} ]")
     }
 }
 
-private fun getNumbersFromUser() : UserNumbers {
+// returning numbers for maximum sum
+fun calculateResults(array: Array<Int>): MutableList<Result> {
+    if (array.size != 3) {
+        println("Wrong array size")
+        return mutableListOf<Result>()
+    }
+    println("Calculating results in progress...")
+    val values1 = calculateValues(array[0])
+    val values2 = calculateValues(array[1])
+    val values3 = calculateValues(array[2])
+
+    val listOfPossibleResults = findAllResults(values1, values2, values3)
+    val listOfBestResults = mutableListOf<Result>()
+
+    for (i in 0 until listOfPossibleResults.size) {
+        if (listOfPossibleResults[i].sum == listOfPossibleResults[0].sum) {
+            listOfBestResults.add(listOfPossibleResults[i])
+        }
+    }
+    return listOfBestResults
+}
+
+private fun getNumbersFromUser(): Array<Int> {
     println("Give me 3 numbers!")
 
     println("Write first number and press Enter: ")
@@ -32,24 +48,20 @@ private fun getNumbersFromUser() : UserNumbers {
 
     writeNumbers(firstNumber, secondNumber, thirdNumber)
 
-    return UserNumbers(firstNumber, secondNumber, thirdNumber)
+    return arrayOf(firstNumber, secondNumber, thirdNumber)
 }
 
-private fun countValues(number: Int) : Array<Int>{
-    val maxAmountOfChanges = countChanges(number, makeArrayOfNines(number))
+// gets all possible incrementation options and calculates maximum possible value for each of these changes
+private fun calculateValues(number: Int): Array<Int> {
+    val maxAmountOfChanges = countChangesBetweenNumbers(number, changeDigitsToNines(number)) // e.g. changes from 123 to 999
 
-    // todo: test
-    val listOptions: MutableList<Int> = checkPossibleOptions(number, maxAmountOfChanges)
-    for (item in listOptions) {
-        println(item)
-    }
-
-    var currentNumber = makeArrayOfMaxDigits(number)
+    val listOptions: MutableList<Int> = getPossibleIncrementationOptions(number, maxAmountOfChanges) // how many times we can increment digits
+    var currentNumber = incrementDigitsByMax(number) // every digit + MAX, e.g. 123 -> 789
     val values = arrayOf(-1, -1, -1, -1, -1, -1, -1)
 
-    while(currentNumber >= number) {
-        val amountOfChanges = countChanges(number, currentNumber)
-        if (listOptions.contains(amountOfChanges)){
+    while (currentNumber >= number) {
+        val amountOfChanges = countChangesBetweenNumbers(number, currentNumber)
+        if (listOptions.contains(amountOfChanges)) {
             if (values[amountOfChanges] == -1) {
                 values[amountOfChanges] = currentNumber
 
@@ -61,10 +73,7 @@ private fun countValues(number: Int) : Array<Int>{
                     }
                 }
 
-                if (hasAllValues){
-                    for (item in values) {
-                        println(item)
-                    }
+                if (hasAllValues) {
                     return values
                 }
             }
@@ -74,6 +83,7 @@ private fun countValues(number: Int) : Array<Int>{
     return values
 }
 
+// taking single number from user in console
 private fun getSingleNumberFromUser(): Int {
     var number: Int = -1
     while (number < 0) {
@@ -89,33 +99,32 @@ private fun getSingleNumberFromUser(): Int {
     return number
 }
 
-private fun makeArrayOfNines(number: Int): Int {
+// creating number from digits 9
+private fun changeDigitsToNines(number: Int): Int {
     val numberString = number.toString()
-    //val array = changeIntToArrayOfInts(numberString.toInt())
+    val maxNumber: Array<Int> = Array(numberString.length, { 9 })
 
-    val maxNumber: Array<Int> = Array(numberString.length,{0})
-    for ((index, s) in numberString.withIndex()) { //
-        maxNumber[index] =  9 //
-    }
-    println(changeArrayOfIntsToInt(maxNumber))
     return changeArrayOfIntsToInt(maxNumber)
 }
 
-private fun makeArrayOfMaxDigits(number: Int): Int {
+// adding MAX_OPERATIONS to every digit of user's number (or less if it would be greater than 9) and make sure new number is dividable by 3
+private fun incrementDigitsByMax(number: Int): Int {
     val numberString = number.toString()
-    val maxNumber: Array<Int> = Array(numberString.length,{0})
-    for ((index, s) in numberString.withIndex()) { //
-        maxNumber[index] =  min(9, s.toString().toInt() + 6) //
+    val maxNumber: Array<Int> = Array(numberString.length, { 0 })
+
+    for ((index, s) in numberString.withIndex()) {
+        maxNumber[index] = min(9, s.toString().toInt() + MAX_OPERATIONS)
     }
 
     var maxNumberInt = changeArrayOfIntsToInt(maxNumber)
-    if(maxNumberInt.mod(3) != 0){
-        maxNumberInt = addSthToMaxValue(maxNumberInt)
+    if (maxNumberInt.mod(3) != 0) {
+        maxNumberInt = makeDividableByThree(maxNumberInt)
     }
     return maxNumberInt
 }
 
-private fun countChanges(userNumber: Int, currentNumber: Int): Int {
+// counting amount of changes between two numbers: userNumber and currentNumber
+private fun countChangesBetweenNumbers(userNumber: Int, currentNumber: Int): Int {
     val userNumberString = userNumber.toString()
     val userArray: Array<String> = userNumberString.toCharArray().map { it.toString() }.toTypedArray()
     val userArrayInts: Array<Int> = userArray.map { it.toInt() }.toTypedArray()
@@ -124,7 +133,6 @@ private fun countChanges(userNumber: Int, currentNumber: Int): Int {
     val currentArray: Array<String> = currentNumberString.toCharArray().map { it.toString() }.toTypedArray()
     val currentArrayInts: Array<Int> = currentArray.map { it.toInt() }.toTypedArray()
 
-    //(arrayOfUserNumber: Array<Int>, arrayOfMaxNumber: Array<Int>): Int
     var numberOfChanges = 0
     for (i in 0 until currentArrayInts.size) {
         if ((currentArrayInts[i] >= userArrayInts[i])) {
@@ -141,18 +149,19 @@ private fun changeArrayOfIntsToInt(arrayToConvert: Array<Int>): Int {
     return newString.toInt()
 }
 
-private fun addSthToMaxValue(number: Int) : Int{
+// converting input to next possible number dividable by 3 (or returning original if it's already dividable)
+private fun makeDividableByThree(number: Int): Int {
     var result = number
     if (number.mod(3) == 1) {
         result = number + 2
-    }
-    else if (number.mod(3) == 2) {
+    } else if (number.mod(3) == 2) {
         result = number + 1
     }
     return result
 }
 
-private fun checkPossibleOptions(number: Int, maxNumberOfChanges: Int): MutableList<Int> {
+// checking modulo of user's number and how many changes you can make thereupon
+private fun getPossibleIncrementationOptions(number: Int, maxNumberOfChanges: Int): MutableList<Int> {
     val numberOfOptions = number.mod(3)
     val optionsList = mutableListOf<Int>()
     if (numberOfOptions == 0) {
@@ -165,16 +174,14 @@ private fun checkPossibleOptions(number: Int, maxNumberOfChanges: Int): MutableL
         if (maxNumberOfChanges >= 6) {
             optionsList.add(6)
         }
-    }
-    else if (numberOfOptions == 1) {
+    } else if (numberOfOptions == 1) {
         if (maxNumberOfChanges >= 2) {
             optionsList.add(2)
         }
         if (maxNumberOfChanges >= 5) {
             optionsList.add(5)
         }
-    }
-    else {
+    } else {
         if (maxNumberOfChanges >= 1) {
             optionsList.add(1)
         }
@@ -185,29 +192,30 @@ private fun checkPossibleOptions(number: Int, maxNumberOfChanges: Int): MutableL
     return optionsList
 }
 
-private fun findBestResult(val1: Array<Int>, val2: Array<Int>, val3: Array<Int>): MutableList<Result>{
+// finding values meeting requirement of maximum 6 changes for all numbers
+private fun findAllResults(val1: Array<Int>, val2: Array<Int>, val3: Array<Int>): MutableList<Result> {
     val resultList = mutableListOf<Result>()
-    for (i in 0..6) {
-        for (j in 0..6) {
-            for (k in 0..6) {
-                if ((val1[i]> -1) and (val2[j] > -1) and (val3[k] > -1) and ((i + j + k) <= 6)) {
-                    resultList.add(Result(
-                        numberOfChanges = i + j + k,
-                        num1 = val1[i],
-                        num2 = val2[j],
-                        num3 = val3[k],
-                        sum = val1[i] + val2[j] + val3[k]
-                    ))
+    for (i in 0..MAX_OPERATIONS) {
+        for (j in 0..MAX_OPERATIONS) {
+            for (k in 0..MAX_OPERATIONS) {
+                if ((val1[i] > -1) and (val2[j] > -1) and (val3[k] > -1) and ((i + j + k) <= MAX_OPERATIONS)) {
+                    resultList.add(
+                        Result(
+                            numberOfChanges = i + j + k,
+                            num1 = val1[i],
+                            num2 = val2[j],
+                            num3 = val3[k],
+                            sum = val1[i] + val2[j] + val3[k]
+                        )
+                    )
                 }
             }
         }
     }
     resultList.sortByDescending { it.sum }
-    //println(resultList)
-
     return resultList
 }
 
 private fun writeNumbers(firstNum: Int, secondNum: Int, thirdNum: Int) {
-    println("[ $firstNum, $secondNum, $thirdNum ]")
+    println("INPUT: [ $firstNum, $secondNum, $thirdNum ]")
 }
