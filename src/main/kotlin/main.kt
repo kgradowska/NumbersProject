@@ -8,7 +8,7 @@ fun main() {
 
     println("Best result(s):")
     for (item in results) {
-        println("[ ${item.num1}, ${item.num2}, ${item.num3} ]")
+        println("[${item.num1}, ${item.num2}, ${item.num3}]. Number of changes: ${item.numberOfChanges}.")
     }
 }
 
@@ -117,7 +117,7 @@ private fun incrementDigitsByMax(number: Int): Int {
     }
 
     var maxNumberInt = changeArrayOfIntsToInt(maxNumber)
-    if (maxNumberInt.mod(3) != 0) {
+    if (maxNumberInt % 3 != 0) {
         maxNumberInt = makeDividableByThree(maxNumberInt)
     }
     return maxNumberInt
@@ -152,9 +152,9 @@ private fun changeArrayOfIntsToInt(arrayToConvert: Array<Int>): Int {
 // converting input to next possible number dividable by 3 (or returning original if it's already dividable)
 private fun makeDividableByThree(number: Int): Int {
     var result = number
-    if (number.mod(3) == 1) {
+    if (number % 3 == 1) {
         result = number + 2
-    } else if (number.mod(3) == 2) {
+    } else if (number % 3 == 2) {
         result = number + 1
     }
     return result
@@ -162,7 +162,7 @@ private fun makeDividableByThree(number: Int): Int {
 
 // checking modulo of user's number and how many changes you can make thereupon
 private fun getPossibleIncrementationOptions(number: Int, maxNumberOfChanges: Int): MutableList<Int> {
-    val numberOfOptions = number.mod(3)
+    val numberOfOptions = number % 3
     val optionsList = mutableListOf<Int>()
     if (numberOfOptions == 0) {
         if (maxNumberOfChanges >= 0) {
